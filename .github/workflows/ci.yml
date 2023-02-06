@@ -1,0 +1,93 @@
+name: CI
+
+defaults:
+  run:
+    shell: pwsh
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  release:
+    types: [ published ]
+
+jobs:
+  Build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Upload module
+        uses: actions/upload-artifact@v3
+        with:
+          name: module
+          path: ./src/
+  Test:
+    needs: Build
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Download module
+        uses: actions/download-artifact@v3
+        with:
+          name: module
+          path: C:\Users\runneradmin\Documents\PowerShell\Modules\AnyPackage.Scoop\
+      - name: Install AnyPackage
+        run: Install-Module AnyPackage -Force -AllowClobber
+      - name: Test with Pester
+        run: |
+          $ht = Import-PowerShellDataFile PesterSettings.psd1
+          $config = New-PesterConfiguration $ht
+          Invoke-Pester -Configuration $config
+  Sign:
+    needs: Test
+    #if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+      - name: Import certificate
+        env:
+          CERTIFICATE_BASE64: ${{ secrets.CERTIFICATE_BASE64 }}
+          CERTIFICATE_PASSWORD: ${{ secrets.CERTIFICATE_PASSWORD }}
+          CERTIFICATE_PASSWORD_KEY_BASE64: ${{ secrets.CERTIFICATE_PASSWORD_KEY_BASE64 }}
+        run: |
+          [convert]::FromBase64String($env:CERTIFICATE_BASE64) | Set-Content -Path cert.pfx -AsByteStream
+          $key = [convert]::FromBase64String($env:CERTIFICATE_PASSWORD_KEY_BASE64)
+          $password = ConvertTo-SecureString $env:CERTIFICATE_PASSWORD -Key $key
+          Import-PfxCertificate cert.pfx -Password $password -CertStoreLocation Cert:\CurrentUser\My
+      - name: Sign files
+        run: |
+          $config = Import-PowerShellDataFile SignSettings.psd1
+          $config['Certificate'] = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert
+          Set-Location .\src
+          Set-AuthenticodeSignature @config
+      - name: Create and sign catalog file
+        run: |
+          $config = Import-PowerShellDataFile SignSettings.psd1
+          $config['FilePath'] = 'AnyPackage.Scoop.cat'
+          $config['Certificate'] = Get-ChildItem Cert:\CurrentUser\My -CodeSigningCert
+          Set-Location .\src
+          New-FileCatalog $config['FilePath'] -CatalogVersion 2
+          Set-AuthenticodeSignature @config
+      - name: Upload module
+        uses: actions/upload-artifact@v3
+        with:
+          name: module-signed
+          path: ./src/
+  Publish:
+    needs: Sign
+    if: github.event_name == 'release' && github.event.action == 'published'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download module
+        uses: actions/download-artifact@v3
+        with:
+          name: module-signed
+          path: '~/.local/share/powershell/Modules/AnyPackage.Scoop'
+      - name: Publish Module
+        env:
+          NUGET_KEY: ${{ secrets.NUGET_KEY }}
+        run: Publish-Module -Name Scoop -NuGetApiKey $env:NUGET_KEY
