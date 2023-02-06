@@ -108,6 +108,9 @@ jobs:
           name: module-signed
           path: '~/.local/share/powershell/Modules/AnyPackage.Scoop'
 
+      - name: Install AnyPackage and Scoop modules
+        run: Install-Module AnyPackage, Scoop -Force -AllowClobber
+
       - name: Publish Module
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
