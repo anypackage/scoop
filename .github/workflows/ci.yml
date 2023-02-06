@@ -34,8 +34,8 @@ jobs:
         with:
           name: module
           path: C:\Users\runneradmin\Documents\PowerShell\Modules\AnyPackage.Scoop\
-      - name: Install AnyPackage
-        run: Install-Module AnyPackage -Force -AllowClobber
+      - name: Install AnyPackage and Scoop
+        run: Install-Module AnyPackage, Scoop -Force -AllowClobber
       - name: Test with Pester
         run: |
           $ht = Import-PowerShellDataFile PesterSettings.psd1
