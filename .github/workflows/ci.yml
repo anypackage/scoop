@@ -111,4 +111,4 @@ jobs:
       - name: Publish Module
         env:
           NUGET_KEY: ${{ secrets.NUGET_KEY }}
-        run: Publish-Module -Name Scoop -NuGetApiKey $env:NUGET_KEY
+        run: Publish-Module -Name AnyPackage.Scoop -NuGetApiKey $env:NUGET_KEY
