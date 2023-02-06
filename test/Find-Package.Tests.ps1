@@ -1,4 +1,4 @@
-#Requires -Modules AnyPackage.Scoop
+﻿#Requires -Modules AnyPackage.Scoop
 
 Describe Find-Package {
     Context 'with -Prerelease parameter' {
@@ -6,7 +6,7 @@ Describe Find-Package {
             $count = & scoop bucket list |
             Measure-Object -Property Manifests -Sum |
             Select-Object -ExpandProperty Sum
-            
+
             Find-Package -Prerelease -WarningAction SilentlyContinue |
             Should -HaveCount $count
         }
