@@ -1,4 +1,4 @@
-# Copyright (c) Thomas Nieto - All Rights Reserved
+﻿# Copyright (c) Thomas Nieto - All Rights Reserved
 # You may use, distribute and modify this code under the
 # terms of the MIT license.
 
@@ -15,7 +15,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
     [PackageProviderInfo] Initialize([PackageProviderInfo] $providerInfo) {
         return [ScoopProviderInfo]::new($providerInfo)
     }
-    
+
     [void] FindPackage([PackageRequest] $request) {
         Find-ScoopApp -Name $request.Name |
         Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
@@ -153,7 +153,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         if ((Get-ScoopBucket -Name $name) -and -not $sourceRequest.Force) {
             throw "Source '$name' already exists. Use -Force to recreate the source."
         }
-        
+
         Register-ScoopBucket @registerBucketParams
 
         Get-ScoopBucket -Name $name |
@@ -164,15 +164,15 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         if ($sourceRequest.Trusted) {
             throw 'Scoop provider does not support Trusted parameter.'
         }
-        
+
         Register-ScoopBucket -Name $sourceRequest.Name -Uri $sourceRequest.Location -Force
 
         $this.GetSource($sourceRequest)
     }
 
     [void] UnregisterSource([SourceRequest] $sourceRequest) {
-        $source = Get-ScoopBucket -Name $sourceRequest.Name        
-        
+        $source = Get-ScoopBucket -Name $sourceRequest.Name
+
         if (-not $source) { return }
 
         Unregister-ScoopBucket -Name $sourceRequest.Name
@@ -243,18 +243,18 @@ class UninstallPackageDynamicParameters : ScopeDynamicParameters {
 class ScoopProviderInfo : PackageProviderInfo {
     [hashtable] $OfficialSources
 
-    ScoopProviderInfo([PackageProviderInfo] $providerInfo) : base($providerInfo) { 
+    ScoopProviderInfo([PackageProviderInfo] $providerInfo) : base($providerInfo) {
         $this.SetOfficialSources()
     }
 
     hidden [void] SetOfficialSources() {
-        $path = Get-Command -Name Scoop | 
-        Select-Object -ExpandProperty Path | 
+        $path = Get-Command -Name Scoop |
+        Select-Object -ExpandProperty Path |
         Split-Path |
         Split-Path |
         Join-Path -ChildPath apps\scoop\current\buckets.json
 
-        $sources = Get-Content -Path $path | 
+        $sources = Get-Content -Path $path |
         ConvertFrom-Json
 
         $keys = $sources |
@@ -277,7 +277,7 @@ $ScriptBlock = {
     Select-Object -ExpandProperty OfficialSources |
     Select-Object -ExpandProperty Keys |
     Where-Object Name -Like "$wordToComplete*" |
-    ForEach-Object { 
+    ForEach-Object {
         [CompletionResult]::new($_)
     }
 }
@@ -286,7 +286,7 @@ Register-ArgumentCompleter -CommandName Register-PackageSource -ParameterName Of
 
 [PackageProviderManager]::RegisterProvider([ScoopProvider], $MyInvocation.MyCommand.ScriptBlock.Module)
 
-$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = { 
+$MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
     [PackageProviderManager]::UnregisterProvider([ScoopProvider])
 }
 
@@ -390,7 +390,7 @@ function Write-Package {
         }
 
         try {
-            [NuGetVersion]::Parse($Version)
+            $null = [NuGetVersion]::Parse($Version)
         }
         catch {
             $request.WriteWarning("Package '$Name' has an invalid version '$Version'. Changing version to '0.0.0'.")
