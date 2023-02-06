@@ -23,10 +23,11 @@ jobs:
     name: PSScriptAnalyzer
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - name: Checkout Repository
+        uses: actions/checkout@v3
 
       - name: Install AnyPackage
-        run: Install-Module AnyPackage -AllowClobber
+        run: Install-Module AnyPackage -Force -AllowClobber
 
       - name: Run PSScriptAnalyzer
         uses: microsoft/psscriptanalyzer-action@v1.1
