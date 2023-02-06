@@ -31,7 +31,6 @@ jobs:
 
       - name: Run PSScriptAnalyzer
         run: |
-          $PSModuleAutoloadingPreference
           Import-Module AnyPackage, ConvertToSARIF
           Invoke-ScriptAnalyzer -Path . -Recurse | ConvertTo-SARIF -FilePath results.sarif
 
