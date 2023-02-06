@@ -31,9 +31,9 @@ jobs:
 
       - name: Run PSScriptAnalyzer
         run: |
-          Import-Module AnyPackage
-          Invoke-ScriptAnalyzer -Path . -Recurse | 
-          ConvertTo-SARIF -FilePath results.sarif
+          Import-Module AnyPackage, ConvertToSARIF
+          Get-Command ConvertTo-SARIF
+          Invoke-ScriptAnalyzer -Path . -Recurse | ConvertTo-SARIF -FilePath results.sarif
 
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v2
