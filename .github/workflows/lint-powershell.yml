@@ -26,16 +26,14 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install AnyPackage
-        run: Install-Module AnyPackage -Force -AllowClobber
+      - name: Install AnyPackage, PSScriptAnalyzer, ConvertToSARIF
+        run: Install-Module AnyPackage, PSScriptAnalyzer, ConvertToSARIF -Force -AllowClobber
 
       - name: Run PSScriptAnalyzer
-        uses: microsoft/psscriptanalyzer-action@v1.1
-        with:
-          path: .\
-          recurse: true
-          output: results.sarif
-        run: Import-Module AnyPackage
+        run: |
+          Import-Module AnyPackage
+          Invoke-ScriptAnalyzer -Path . -Recurse | 
+          ConvertTo-SARIF -FilePath results.sarif
 
       - name: Upload SARIF results file
         uses: github/codeql-action/upload-sarif@v2
