@@ -273,6 +273,9 @@ class ScoopProviderInfo : PackageProviderInfo {
 $ScriptBlock = {
     param($commandName, $parameterName, $wordToComplete, $commandAst, $fakeBoundParameters)
 
+    # Suppress PSReviewUnusedParameter warning since suppressing it does not work.
+    $null = $commandName, $parameterName, $commandAst, $fakeBoundParameters
+
     Get-PackageProvider -Name Scoop |
     Select-Object -ExpandProperty OfficialSources |
     Select-Object -ExpandProperty Keys |
@@ -322,7 +325,7 @@ function Write-Source {
     process {
         if ($Name -like $Request.Name) {
             $trusted = if ($Location -in $OfficialSources.Values) { $true } else { $false }
-            $Request.WriteSource($Name, $Location, $trusted, @{Updated = $_.Updated; Manifests = $_.Manifests })
+            $Request.WriteSource($Name, $Location, $trusted, @{ Updated = $Updated; Manifests = $Manifests })
         }
     }
 }
@@ -359,10 +362,6 @@ function Write-Package {
         $Request,
 
         [Parameter()]
-        [object[]]
-        $Sources,
-
-        [Parameter()]
         [hashtable]
         $OfficialSources
     )
@@ -385,8 +384,8 @@ function Write-Package {
             $trusted = if ($bucket.Source -in $OfficialSources.Values) { $true } else { $false }
             $sourceInfo = $Request.NewSourceInfo($bucket.Name,
                                                  $bucket.Source,
-                                                 $trusted, 
-                                                 @{Updated = $_.Updated; Manifests = $_.Manifests })
+                                                 $trusted,
+                                                 @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests })
         }
 
         try {
