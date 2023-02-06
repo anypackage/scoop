@@ -26,8 +26,8 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Install AnyPackage, PSScriptAnalyzer, ConvertToSARIF
-        run: Install-Module AnyPackage, PSScriptAnalyzer, ConvertToSARIF -Force -AllowClobber
+      - name: Install AnyPackage and ConvertToSARIF
+        run: Install-Module AnyPackage, ConvertToSARIF -Force -AllowClobber
 
       - name: Run PSScriptAnalyzer
         run: |
