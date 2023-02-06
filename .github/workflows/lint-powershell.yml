@@ -1,5 +1,9 @@
 name: PSScriptAnalyzer
 
+defaults:
+  run:
+    shell: pwsh
+
 on:
   push:
     branches: [ "main" ]
