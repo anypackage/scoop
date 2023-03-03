@@ -14,6 +14,9 @@
     CmdletsToExport = @()
     AliasesToExport = @()
     PrivateData = @{
+        AnyPackage = @{
+            Providers = 'Scoop'
+        }
         PSData = @{
             Tags = @('AnyPackage', 'Provider', 'Scoop', 'Windows')
             LicenseUri = 'https://github.com/AnyPackage/AnyPackage.Scoop/blob/main/LICENSE'
