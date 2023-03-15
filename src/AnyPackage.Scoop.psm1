@@ -54,7 +54,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         if ($request.Source) { $findPackageParameters['Bucket'] = $request.Source }
 
         Find-ScoopApp @findPackageParameters |
-        Where-Object { try { $request.IsMatch([NuGetVersion]$_.Version) } catch { $request.IsMatch([NuGetVersion]'0.0.0') } } |
+        Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
         Select-Object -Property Name |
         Install-ScoopApp @installScoopAppParams
 
@@ -92,7 +92,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
 
         Get-ScoopApp @getPackageParameters |
         Find-ScoopApp @findPackageParameters |
-        Where-Object { try { $request.IsMatch([NuGetVersion]$_.Version) } catch { $request.IsMatch([NuGetVersion]'0.0.0') } } |
+        Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
         Select-Object -Property Name |
         Update-ScoopApp @installScoopAppParams
 
@@ -112,7 +112,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         }
 
         $package = Get-ScoopApp -Name $request.Name |
-        Where-Object { try { $request.IsMatch([NuGetVersion]$_.Version) } catch { $request.IsMatch([NuGetVersion]'0.0.0') } }
+        Where-Object { $request.IsMatch([PackageVersion]$_.Version) }
 
         $package | Uninstall-ScoopApp @uninstallScoopAppParams
 
@@ -386,14 +386,6 @@ function Write-Package {
                                                  $bucket.Source,
                                                  $trusted,
                                                  @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests })
-        }
-
-        try {
-            $null = [NuGetVersion]::Parse($Version)
-        }
-        catch {
-            $request.WriteWarning("Package '$Name' has an invalid version '$Version'. Changing version to '0.0.0'.")
-            $Version = '0.0.0'
         }
 
         if ($Request.IsMatch($Name, $Version)) {
