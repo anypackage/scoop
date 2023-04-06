@@ -10,8 +10,6 @@ using namespace System.Management.Automation
 [PackageProvider('Scoop')]
 class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
     IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource {
-    ScoopProvider() : base('28111522-ea7a-4e8a-b598-85389c17f8be') { }
-
     [PackageProviderInfo] Initialize([PackageProviderInfo] $providerInfo) {
         return [ScoopProviderInfo]::new($providerInfo)
     }
@@ -287,10 +285,11 @@ $ScriptBlock = {
 
 Register-ArgumentCompleter -CommandName Register-PackageSource -ParameterName Official -ScriptBlock $ScriptBlock
 
-[PackageProviderManager]::RegisterProvider([ScoopProvider], $MyInvocation.MyCommand.ScriptBlock.Module)
+[guid] $id = '28111522-ea7a-4e8a-b598-85389c17f8be'
+[PackageProviderManager]::RegisterProvider($id, [ScoopProvider], $MyInvocation.MyCommand.ScriptBlock.Module)
 
 $MyInvocation.MyCommand.ScriptBlock.Module.OnRemove = {
-    [PackageProviderManager]::UnregisterProvider([ScoopProvider])
+    [PackageProviderManager]::UnregisterProvider($id)
 }
 
 function Write-Source {
@@ -325,7 +324,8 @@ function Write-Source {
     process {
         if ($Name -like $Request.Name) {
             $trusted = if ($Location -in $OfficialSources.Values) { $true } else { $false }
-            $Request.WriteSource($Name, $Location, $trusted, @{ Updated = $Updated; Manifests = $Manifests })
+            $source = [PackageSourceInfo]::new($Name, $Location, $trusted, @{ Updated = $Updated; Manifests = $Manifests }, $Request.ProviderInfo)
+            $Request.WriteSource($source)
         }
     }
 }
@@ -382,14 +382,16 @@ function Write-Package {
         else {
             $bucket = $buckets | Where-Object Name -eq $Source
             $trusted = if ($bucket.Source -in $OfficialSources.Values) { $true } else { $false }
-            $sourceInfo = $Request.NewSourceInfo($bucket.Name,
-                                                 $bucket.Source,
-                                                 $trusted,
-                                                 @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests })
+            $sourceInfo = [PackageSourceInfo]::new($bucket.Name,
+                                                   $bucket.Source,
+                                                   $trusted,
+                                                   @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests },
+                                                   $Request.ProviderInfo)
         }
 
         if ($Request.IsMatch($Name, $Version)) {
-            $Request.WritePackage($Name, $Version, $Description, $sourceInfo, $metadata)
+            $package = [PackageInfo]::new($Name, $Version, $sourceInfo, $Description, $metadata, $Request.ProviderInfo)
+            $Request.WritePackage($package)
         }
     }
 }
