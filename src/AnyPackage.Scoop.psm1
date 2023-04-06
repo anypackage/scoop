@@ -390,7 +390,7 @@ function Write-Package {
         }
 
         if ($Request.IsMatch($Name, $Version)) {
-            $package = [PackageInfo]::new($Name, $Version, $sourceInfo, $Description, $metadata, $Request.ProviderInfo)
+            $package = [PackageInfo]::new($Name, $Version, $sourceInfo, $Description, $null, $metadata, $Request.ProviderInfo)
             $Request.WritePackage($package)
         }
     }
