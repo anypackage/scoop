@@ -19,8 +19,8 @@
         }
         PSData = @{
             Tags = @('AnyPackage', 'Provider', 'Scoop', 'Windows')
-            LicenseUri = 'https://github.com/AnyPackage/AnyPackage.Scoop/blob/main/LICENSE'
-            ProjectUri = 'https://github.com/AnyPackage/AnyPackage.Scoop'
+            LicenseUri = 'https://github.com/anypackage/scoop/blob/main/LICENSE'
+            ProjectUri = 'https://github.com/anypackage/scoop'
         }
     }
     HelpInfoURI = 'https://go.anypackage.dev/help'
