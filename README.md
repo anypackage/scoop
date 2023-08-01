@@ -1,6 +1,17 @@
 # AnyPackage.Scoop
 
-AnyPackage.Scoop is an AnyPackage provider that facilitates installing Scoop apps from any Scoop bucket.
+[![gallery-image]][gallery-site]
+[![build-image]][build-site]
+[![cf-image]][cf-site]
+
+[gallery-image]: https://img.shields.io/powershellgallery/dt/AnyPackage.Scoop
+[build-image]: https://img.shields.io/github/actions/workflow/status/anypackage/scoop/ci.yml
+[cf-image]: https://img.shields.io/codefactor/grade/github/anypackage/scoop
+[gallery-site]: https://www.powershellgallery.com/packages/AnyPackage.Scoop
+[build-site]: https://github.com/anypackage/scoop/actions/workflows/ci.yml
+[cf-site]: https://www.codefactor.io/repository/github/anypackage/scoop
+
+`AnyPackage.Scoop` is an AnyPackage provider that facilitates installing Scoop apps from any Scoop bucket.
 
 ## Install AnyPackage.Scoop
 
