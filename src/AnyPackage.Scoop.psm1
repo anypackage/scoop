@@ -3,25 +3,44 @@
 # terms of the MIT license.
 
 using module AnyPackage
+using module Scoop
 using namespace AnyPackage.Provider
-using namespace NuGet.Versioning
+using namespace AnyPackage.Feedback
+using namespace System.Collections.Generic
+using namespace System.IO
 using namespace System.Management.Automation
+using namespace System.Threading
 
 [PackageProvider('Scoop')]
 class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
-    IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource {
+IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICommandNotFound {
     [PackageProviderInfo] Initialize([PackageProviderInfo] $providerInfo) {
         return [ScoopProviderInfo]::new($providerInfo)
     }
 
+    [IEnumerable[CommandNotFoundFeedback]] FindPackage([CommandNotFoundContext] $context, [CancellationToken] $token) {
+        $dict = New-Object 'System.Collections.Generic.Dictionary[[string],[CommandNotFoundFeedback]]'
+        $key = [Path]::GetFileNameWithoutExtension($context.Command) 
+        $packages = $this.ProviderInfo.CommandCache[$key]
+
+        foreach ($package in $packages) {
+            if (!$dict.ContainsKey($package.Name) -and $package.Binaries -match $context.Command) {
+                $feedback = [CommandNotFoundFeedback]::new($package.Name, $this.ProviderInfo)
+                $dict.Add($package.Name, $feedback)
+            }
+        }
+
+        return $dict.Values
+    }
+
     [void] FindPackage([PackageRequest] $request) {
         Find-ScoopApp -Name $request.Name |
-        Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] GetPackage([PackageRequest] $request) {
         Get-ScoopApp -Name $request.Name |
-        Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] InstallPackage([PackageRequest] $request) {
@@ -52,12 +71,12 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         if ($request.Source) { $findPackageParameters['Bucket'] = $request.Source }
 
         Find-ScoopApp @findPackageParameters |
-        Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
-        Select-Object -Property Name |
-        Install-ScoopApp @installScoopAppParams
+            Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
+            Select-Object -Property Name |
+            Install-ScoopApp @installScoopAppParams
 
         Get-ScoopApp -Name $request.Name |
-        Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] UpdatePackage([PackageRequest] $request) {
@@ -83,19 +102,19 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
             $installScoopAppParams['Force'] = $true
         }
 
-        $getPackageParameters = @{ Name = $request.Name}
+        $getPackageParameters = @{ Name = $request.Name }
         $findPackageParameters = @{ }
 
         if ($request.Source) { $findPackageParameters['Bucket'] = $request.Source }
 
         Get-ScoopApp @getPackageParameters |
-        Find-ScoopApp @findPackageParameters |
-        Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
-        Select-Object -Property Name |
-        Update-ScoopApp @installScoopAppParams
+            Find-ScoopApp @findPackageParameters |
+            Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
+            Select-Object -Property Name |
+            Update-ScoopApp @installScoopAppParams
 
         Get-ScoopApp -Name $request.Name |
-        Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] UninstallPackage([PackageRequest] $request) {
@@ -110,19 +129,19 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         }
 
         $package = Get-ScoopApp -Name $request.Name |
-        Where-Object { $request.IsMatch([PackageVersion]$_.Version) }
+            Where-Object { $request.IsMatch([PackageVersion]$_.Version) }
 
         $package | Uninstall-ScoopApp @uninstallScoopAppParams
 
         if (-not ($package | Get-ScoopApp)) {
             $package |
-            Write-Package -Request $request -OfficialSources $this.PackageInfo.OfficialSources
+                Write-Package -Request $request -OfficialSources $this.PackageInfo.OfficialSources
         }
     }
 
     [void] GetSource([SourceRequest] $sourceRequest) {
         Get-ScoopBucket |
-        Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] RegisterSource([SourceRequest] $sourceRequest) {
@@ -138,8 +157,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
             $name = $sourceRequest.Name
             $registerBucketParams['Name'] = $sourceRequest.Name
             $registerBucketParams['Uri'] = $sourceRequest.Location
-        }
-        else {
+        } else {
             if (-not ($sourceRequest.DynamicParameters.Official -in $this.ProviderInfo.OfficialSources.Keys)) {
                 throw "'$($sourceRequest.DynamicParameters.Official)' is not an official source."
             }
@@ -155,7 +173,7 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         Register-ScoopBucket @registerBucketParams
 
         Get-ScoopBucket -Name $name |
-        Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [void] SetSource([SourceRequest] $sourceRequest) {
@@ -176,17 +194,17 @@ class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
         Unregister-ScoopBucket -Name $sourceRequest.Name
 
         $source |
-        Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
+            Write-Source -Request $sourceRequest -OfficialSources $this.ProviderInfo.OfficialSources
     }
 
     [object] GetDynamicParameters([string] $commandName) {
         return $(switch ($commandName) {
-            'Register-PackageSource' { [RegisterPackageSourceDynamicParameters]::new() }
-            'Install-Package' { [InstallPackageDynamicParameters]::new() }
-            'Uninstall-Package' { [UninstallPackageDynamicParameters]::new() }
-            'Update-Package' { [UpdatePackageDynamicParameters]::new() }
-            default { $null }
-        })
+                'Register-PackageSource' { [RegisterPackageSourceDynamicParameters]::new() }
+                'Install-Package' { [InstallPackageDynamicParameters]::new() }
+                'Uninstall-Package' { [UninstallPackageDynamicParameters]::new() }
+                'Update-Package' { [UpdatePackageDynamicParameters]::new() }
+                default { $null }
+            })
     }
 }
 
@@ -240,24 +258,26 @@ class UninstallPackageDynamicParameters : ScopeDynamicParameters {
 
 class ScoopProviderInfo : PackageProviderInfo {
     [hashtable] $OfficialSources
+    [Dictionary[string, List[ScoopAppDetailed]]]$CommandCache
 
     ScoopProviderInfo([PackageProviderInfo] $providerInfo) : base($providerInfo) {
         $this.SetOfficialSources()
+        $this.SetCommandCache()
     }
 
     hidden [void] SetOfficialSources() {
         $path = Get-Command -Name Scoop |
-        Select-Object -ExpandProperty Path |
-        Split-Path |
-        Split-Path |
-        Join-Path -ChildPath apps\scoop\current\buckets.json
+            Select-Object -ExpandProperty Path |
+            Split-Path |
+            Split-Path |
+            Join-Path -ChildPath apps\scoop\current\buckets.json
 
         $sources = Get-Content -Path $path |
-        ConvertFrom-Json
+            ConvertFrom-Json
 
         $keys = $sources |
-        Get-Member -MemberType NoteProperty |
-        Select-Object -ExpandProperty Name
+            Get-Member -MemberType NoteProperty |
+            Select-Object -ExpandProperty Name
 
         $ht = @{ }
         foreach ($key in $keys) {
@@ -265,6 +285,26 @@ class ScoopProviderInfo : PackageProviderInfo {
         }
 
         $this.OfficialSources = $ht
+    }
+
+    hidden [void] SetCommandCache() {
+        $this.CommandCache = New-Object 'System.Collections.Generic.Dictionary[[string],[List[ScoopAppDetailed]]]'
+
+        $packages = Find-ScoopApp
+
+        foreach ($package in $packages) {
+            foreach ($command in $package.Binaries) {
+                $key = [Path]::GetFileNameWithoutExtension($command)
+                
+                if ($this.CommandCache.ContainsKey($key)) {
+                    $this.CommandCache[$key] += $package
+                } else {
+                    $list = [List[ScoopAppDetailed]]::new()
+                    $list += $package
+                    $this.CommandCache.Add($key, $package)
+                }
+            }
+        }
     }
 }
 
@@ -275,12 +315,12 @@ $ScriptBlock = {
     $null = $commandName, $parameterName, $commandAst, $fakeBoundParameters
 
     Get-PackageProvider -Name Scoop |
-    Select-Object -ExpandProperty OfficialSources |
-    Select-Object -ExpandProperty Keys |
-    Where-Object Name -Like "$wordToComplete*" |
-    ForEach-Object {
-        [CompletionResult]::new($_)
-    }
+        Select-Object -ExpandProperty OfficialSources |
+        Select-Object -ExpandProperty Keys |
+        Where-Object Name -Like "$wordToComplete*" |
+        ForEach-Object {
+            [CompletionResult]::new($_)
+        }
 }
 
 Register-ArgumentCompleter -CommandName Register-PackageSource -ParameterName Official -ScriptBlock $ScriptBlock
@@ -378,15 +418,14 @@ function Write-Package {
 
         if ($Source -eq '<auto-generated>' -or (Test-Path -Path $Source)) {
             $sourceInfo = $null
-        }
-        else {
-            $bucket = $buckets | Where-Object Name -eq $Source
+        } else {
+            $bucket = $buckets | Where-Object Name -EQ $Source
             $trusted = if ($bucket.Source -in $OfficialSources.Values) { $true } else { $false }
             $sourceInfo = [PackageSourceInfo]::new($bucket.Name,
-                                                   $bucket.Source,
-                                                   $trusted,
-                                                   @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests },
-                                                   $Request.ProviderInfo)
+                $bucket.Source,
+                $trusted,
+                @{ Updated = $bucket.Updated; Manifests = $bucket.Manifests },
+                $Request.ProviderInfo)
         }
 
         if ($Request.IsMatch($Name, $Version)) {

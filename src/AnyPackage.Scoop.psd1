@@ -1,6 +1,6 @@
 @{
     RootModule = 'AnyPackage.Scoop.psm1'
-    ModuleVersion = '0.1.4'
+    ModuleVersion = '0.2.0'
     CompatiblePSEditions = @('Desktop', 'Core')
     GUID = 'bc4720f6-72ad-45df-aa7d-316cb313ad5e'
     Author = 'Thomas Nieto'
@@ -8,8 +8,8 @@
     Description = 'Scoop provider for AnyPackage.'
     PowerShellVersion = '5.1'
     RequiredModules = @(
-        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.5.1' },
-        @{ ModuleName = 'Scoop'; ModuleVersion = '0.1.1' })
+        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.6.0' },
+        @{ ModuleName = 'Scoop'; ModuleVersion = '0.2.0' })
     FunctionsToExport = @()
     CmdletsToExport = @()
     AliasesToExport = @()
