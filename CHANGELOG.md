@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2024-08-15
+
+### Changed
+
+- Add command not found (#18)
+
 ## [0.1.4] - 2023-04-05
 
 ### Changed
@@ -37,7 +43,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Initial release
 
-[Unreleased]: https://github.com/anypackage/scoop/compare/v0.1.4...HEAD
+[Unreleased]: https://github.com/anypackage/scoop/compare/v0.2.0...HEAD
+[0.2.0]: https://github.com/anypackage/scoop/releases/tag/v0.2.0
 [0.1.4]: https://github.com/anypackage/scoop/releases/tag/v0.1.4
 [0.1.3]: https://github.com/anypackage/scoop/releases/tag/v0.1.3
 [0.1.2]: https://github.com/anypackage/scoop/releases/tag/v0.1.2
