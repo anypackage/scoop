@@ -19,7 +19,7 @@ IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICom
     }
 
     [IEnumerable[CommandNotFoundFeedback]] FindPackage([CommandNotFoundContext] $context, [CancellationToken] $token) {
-        $dict = [Dictionary[string, CommandNotFoundFeedback]]::new()
+        $dict = [Dictionary[string, CommandNotFoundFeedback]]::new([StringComparer]::OrdinalIgnoreCase)
         $key = [Path]::GetFileNameWithoutExtension($context.Command) 
         $packages = $this.ProviderInfo.CommandCache[$key]
 
@@ -258,18 +258,18 @@ class UninstallPackageDynamicParameters : ScopeDynamicParameters {
 
 class ScoopProviderInfo : PackageProviderInfo {
     [hashtable] $OfficialSources
-    [Dictionary[string, List[ScoopAppDetailed]]] $CommandCache = [Dictionary[string, List[ScoopAppDetailed]]]::new()
+    [Dictionary[string, List[ScoopAppDetailed]]] $CommandCache = [Dictionary[string, List[ScoopAppDetailed]]]::new([StringComparer]::OrdinalIgnoreCase)
 
 
     ScoopProviderInfo([PackageProviderInfo] $providerInfo) : base($providerInfo) {
         $this.SetOfficialSources()
         
-        if ([Runspace]::DefaultRunspace.Id -ne 1) {
+        if ([Runspace]::DefaultRunspace.Name -eq $this.FullName) {
             $this.SetCommandCache()
         }
     }
 
-    hidden [void] SetOfficialSources() {
+    [void] SetOfficialSources() {
         $path = Get-Command -Name Scoop |
             Select-Object -ExpandProperty Path |
             Split-Path |
@@ -291,7 +291,7 @@ class ScoopProviderInfo : PackageProviderInfo {
         $this.OfficialSources = $ht
     }
 
-    hidden [void] SetCommandCache() {
+    [void] SetCommandCache() {
         $packages = Find-ScoopApp
 
         foreach ($package in $packages) {
