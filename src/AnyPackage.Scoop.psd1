@@ -8,8 +8,8 @@
     Description = 'Scoop provider for AnyPackage.'
     PowerShellVersion = '5.1'
     RequiredModules = @(
-        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.6.0' },
-        @{ ModuleName = 'Scoop'; ModuleVersion = '0.2.0' })
+        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.9.0' },
+        @{ ModuleName = 'Scoop'; ModuleVersion = '0.3.0' })
     FunctionsToExport = @()
     CmdletsToExport = @()
     AliasesToExport = @()

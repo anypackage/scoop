@@ -9,7 +9,7 @@ Describe Update-Package {
         Uninstall-ScoopApp -Name 7zip -ErrorAction Ignore
     }
 
-    Context 'with no paramters' {
+    Context 'with no parameters' {
         It 'should update' {
             { Update-Package -ErrorAction Stop } |
             Should -Not -Throw
@@ -24,7 +24,7 @@ Describe Update-Package {
     }
 
     Context 'with -SkipDependencies parameter' {
-        It 'should update wihout dependency' {
+        It 'should update without dependency' {
             { Update-Package -Provider Scoop -SkipDependencies -ErrorAction Stop } |
             Should -Not -Throw
         }

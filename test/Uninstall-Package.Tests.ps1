@@ -16,7 +16,7 @@ Describe Uninstall-Package {
         It 'should install' {
             # TODO: Fix 22.0 parse
             { Uninstall-Package -Name 7zip -Version '22.01' -ErrorAction Stop } |
-            Should -Not -Throw
+            Should -Not -
         }
 
         It 'should install' {
