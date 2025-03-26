@@ -4,7 +4,7 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     GUID = 'bc4720f6-72ad-45df-aa7d-316cb313ad5e'
     Author = 'Thomas Nieto'
-    Copyright = '(c) 2024 Thomas Nieto. All rights reserved.'
+    Copyright = '(c) 2025 Thomas Nieto. All rights reserved.'
     Description = 'Scoop provider for AnyPackage.'
     PowerShellVersion = '5.1'
     RequiredModules = @(
