@@ -4,12 +4,12 @@
     CompatiblePSEditions = @('Desktop', 'Core')
     GUID = 'bc4720f6-72ad-45df-aa7d-316cb313ad5e'
     Author = 'Thomas Nieto'
-    Copyright = '(c) 2024 Thomas Nieto. All rights reserved.'
+    Copyright = '(c) 2025 Thomas Nieto. All rights reserved.'
     Description = 'Scoop provider for AnyPackage.'
     PowerShellVersion = '5.1'
     RequiredModules = @(
-        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.6.0' },
-        @{ ModuleName = 'Scoop'; ModuleVersion = '0.2.0' })
+        @{ ModuleName = 'AnyPackage'; ModuleVersion = '0.9.0' },
+        @{ ModuleName = 'Scoop'; ModuleVersion = '0.3.0' })
     FunctionsToExport = @()
     CmdletsToExport = @()
     AliasesToExport = @()

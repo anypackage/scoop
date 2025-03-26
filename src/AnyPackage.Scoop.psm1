@@ -13,7 +13,7 @@ using namespace System.Threading
 
 [PackageProvider('Scoop')]
 class ScoopProvider : PackageProvider, IFindPackage, IGetPackage,
-IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICommandNotFound {
+IInstallPackage, IOptimizePackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICommandNotFound {
     [PackageProviderInfo] Initialize([PackageProviderInfo] $providerInfo) {
         return [ScoopProviderInfo]::new($providerInfo)
     }
@@ -74,6 +74,24 @@ IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICom
             Where-Object { $request.IsMatch([PackageVersion]$_.Version) } |
             Select-Object -Property Name |
             Install-ScoopApp @installScoopAppParams
+
+        Get-ScoopApp -Name $request.Name |
+            Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
+    }
+
+    [void] OptimizePackage([PackageRequest] $request) {
+        $optimizeScoopAppParams = @{ }
+
+        if ($request.DynamicParameters.Scope -eq 'AllUsers') {
+            $optimizeScoopAppParams['Global'] = $true
+        }
+
+        if ($request.DynamicParameters.DownloadCache) {
+            $optimizeScoopAppParams['DownloadCache'] = $request.DynamicParameters.DownloadCache
+        }
+
+        Get-ScoopApp -Name $request.Name |
+            Optimize-ScoopApp @optimizeScoopAppParams
 
         Get-ScoopApp -Name $request.Name |
             Write-Package -Request $request -OfficialSources $this.ProviderInfo.OfficialSources
@@ -201,6 +219,7 @@ IInstallPackage, IUpdatePackage, IUninstallPackage, IGetSource, ISetSource, ICom
         return $(switch ($commandName) {
                 'Register-PackageSource' { [RegisterPackageSourceDynamicParameters]::new() }
                 'Install-Package' { [InstallPackageDynamicParameters]::new() }
+                'Optimize-Package' { [OptimizePackageDynamicParameters]::new() }
                 'Uninstall-Package' { [UninstallPackageDynamicParameters]::new() }
                 'Update-Package' { [UpdatePackageDynamicParameters]::new() }
                 default { $null }
@@ -254,6 +273,12 @@ class UninstallPackageDynamicParameters : ScopeDynamicParameters {
     [Parameter()]
     [switch]
     $RemoveData
+}
+
+class OptimizePackageDynamicParameters : ScopeDynamicParameters {
+    [Parameter()]
+    [switch]
+    $DownloadCache
 }
 
 class ScoopProviderInfo : PackageProviderInfo {

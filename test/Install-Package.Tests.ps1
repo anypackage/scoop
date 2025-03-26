@@ -29,7 +29,7 @@ Describe Install-Package {
     }
 
     Context 'with -SkipDependencies parameter' {
-        It 'should install wihout dependency' {
+        It 'should install without dependency' {
             { Install-Package -Provider Scoop -Name z.lua -SkipDependencies -ErrorAction Stop } |
             Should -Not -Throw
 
