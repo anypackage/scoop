@@ -1,6 +1,6 @@
 @{
     RootModule = 'AnyPackage.Scoop.psm1'
-    ModuleVersion = '0.2.0'
+    ModuleVersion = '0.3.0'
     CompatiblePSEditions = @('Desktop', 'Core')
     GUID = 'bc4720f6-72ad-45df-aa7d-316cb313ad5e'
     Author = 'Thomas Nieto'
